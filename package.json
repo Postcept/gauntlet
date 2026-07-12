@@ -1,0 +1,24 @@
+{
+  "name": "@postcept/gauntlet",
+  "version": "0.1.0",
+  "description": "The Completion Gap Gauntlet: reproducible broken-refund scenarios scored against Postcept's real verification engine and a naive baseline, so the completion gap is measurable, not asserted.",
+  "license": "MIT",
+  "author": "Postcept",
+  "keywords": ["postcept", "benchmark", "ai-agents", "completion-gap", "verification"],
+  "repository": { "type": "git", "url": "git+https://github.com/Postcept/gauntlet.git" },
+  "homepage": "https://postcept.com/lab",
+  "bugs": "https://github.com/Postcept/gauntlet/issues",
+  "publishConfig": { "access": "public" },
+  "type": "module",
+  "bin": { "postcept-gauntlet": "dist/index.js" },
+  "files": ["dist", "scenarios.json", "README.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "npm run build && node --test",
+    "start": "node dist/index.js"
+  },
+  "devDependencies": { "@types/node": "^20.14.0", "typescript": "^5.5.3" }
+}
