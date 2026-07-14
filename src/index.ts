@@ -25,14 +25,27 @@ interface ScenarioSpec {
   note: string;
 }
 
+interface LedgerRecord {
+  refund_id?: string;
+  charge_id?: string;
+  amount_cents?: number;
+  currency?: string | null;
+  status?: string;
+}
+
 interface PlaygroundRun {
-  claim: Record<string, unknown>;
-  source_of_truth: { status?: string; refund_id?: string }[];
+  claim: { refund_id?: string | null; amount_cents?: number; currency?: string };
+  source_of_truth: LedgerRecord[];
   verification: { safe_to_claim_complete?: boolean } | null;
   unreachable: string | null;
 }
 
-type System = "trust-the-agent" | "always-block" | "source-reread" | "postcept";
+type System =
+  | "trust-the-agent"
+  | "always-block"
+  | "source-reread"
+  | "bespoke-checker"
+  | "postcept";
 
 // Baseline 1: no verification. The agent said done, so treat it as done.
 function trustTheAgent(): boolean {
@@ -44,6 +57,25 @@ function trustTheAgent(): boolean {
 // and why false-block is reported separately from false-safe.
 function alwaysBlock(): boolean {
   return false;
+}
+
+// Baseline 4: a competent hand-rolled checker, the strong version of what a team
+// builds in a sprint: re-read the record, compare status, amount and currency,
+// and flag any second refund on the same charge as a duplicate. It catches most
+// traps. What it cannot do is correlate: it blocks legitimate second operations
+// and case-different currencies, and it never checks the customer.
+function bespokeChecker(run: PlaygroundRun): boolean {
+  if (run.unreachable) return false;
+  const claim = run.claim;
+  const rec = run.source_of_truth.find((r) => r.refund_id === claim.refund_id);
+  if (!rec) return false;
+  if (rec.status !== "succeeded") return false;
+  if (rec.amount_cents !== claim.amount_cents) return false;
+  if (rec.currency !== claim.currency) return false;
+  const siblings = run.source_of_truth.filter(
+    (r) => r.charge_id === rec.charge_id && r.refund_id !== rec.refund_id
+  );
+  return siblings.length === 0;
 }
 
 // Baseline 3: re-read the source and call it done if a record exists in a
@@ -68,6 +100,7 @@ async function runScenario(spec: ScenarioSpec): Promise<Record<System, boolean> 
     "trust-the-agent": trustTheAgent(),
     "always-block": alwaysBlock(),
     "source-reread": sourceReread(run),
+    "bespoke-checker": bespokeChecker(run),
     postcept: run.verification?.safe_to_claim_complete ?? false,
   };
 }
@@ -79,11 +112,18 @@ function loadScenarios(): ScenarioSpec[] {
 
 async function main(): Promise<void> {
   const scenarios = loadScenarios();
-  const systems: System[] = ["trust-the-agent", "always-block", "source-reread", "postcept"];
+  const systems: System[] = [
+    "trust-the-agent",
+    "always-block",
+    "source-reread",
+    "bespoke-checker",
+    "postcept",
+  ];
   const scores: Record<System, number> = {
     "trust-the-agent": 0,
     "always-block": 0,
     "source-reread": 0,
+    "bespoke-checker": 0,
     postcept: 0,
   };
   // The two ways to be wrong, reported separately: a false safe tells a customer
@@ -92,12 +132,14 @@ async function main(): Promise<void> {
     "trust-the-agent": 0,
     "always-block": 0,
     "source-reread": 0,
+    "bespoke-checker": 0,
     postcept: 0,
   };
   const falseBlock: Record<System, number> = {
     "trust-the-agent": 0,
     "always-block": 0,
     "source-reread": 0,
+    "bespoke-checker": 0,
     postcept: 0,
   };
   const rows: { id: string; expect: boolean; got: Record<System, boolean> }[] = [];

@@ -25,6 +25,12 @@ unknown provider states, so it over-claims on exactly those.
 score high while blocking every legitimate completion, which is exactly why the
 set is balanced and the error types are split.
 
+`bespoke-checker` is the strong version of what a team hand-rolls in a sprint:
+re-read the record, compare status, amount and currency, and treat any second
+refund on the charge as a duplicate. It catches most traps. It also blocks
+legitimate second operations and case-different currencies, and it never checks
+the customer, which is exactly the maintenance gap the engine exists to close.
+
 `postcept` is the `safe_to_claim_complete` decision from the engine.
 
 A system scores a point when its safe or not-safe answer matches the scenario's

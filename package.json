@@ -1,6 +1,6 @@
 {
   "name": "@postcept/gauntlet",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The Completion Gap Gauntlet: reproducible broken-refund scenarios scored against Postcept's real verification engine and a naive baseline, so the completion gap is measurable, not asserted.",
   "license": "MIT",
   "author": "Postcept",
