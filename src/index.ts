@@ -32,14 +32,21 @@ interface PlaygroundRun {
   unreachable: string | null;
 }
 
-type System = "trust-the-agent" | "source-reread" | "postcept";
+type System = "trust-the-agent" | "always-block" | "source-reread" | "postcept";
 
 // Baseline 1: no verification. The agent said done, so treat it as done.
 function trustTheAgent(): boolean {
   return true;
 }
 
-// Baseline 2: re-read the source and call it done if a record exists in a
+// Baseline 2: never trust anything. On an unbalanced trap set this scores high
+// while blocking every legitimate completion, which is why the set is balanced
+// and why false-block is reported separately from false-safe.
+function alwaysBlock(): boolean {
+  return false;
+}
+
+// Baseline 3: re-read the source and call it done if a record exists in a
 // success state. This is the simple status re-check teams write by hand. It has
 // no notion of duplicates, wrong amount or customer, or unknown states, which is
 // what the gauntlet shows.
@@ -59,6 +66,7 @@ async function runScenario(spec: ScenarioSpec): Promise<Record<System, boolean> 
   const run = (await res.json()) as PlaygroundRun;
   return {
     "trust-the-agent": trustTheAgent(),
+    "always-block": alwaysBlock(),
     "source-reread": sourceReread(run),
     postcept: run.verification?.safe_to_claim_complete ?? false,
   };
@@ -71,9 +79,24 @@ function loadScenarios(): ScenarioSpec[] {
 
 async function main(): Promise<void> {
   const scenarios = loadScenarios();
-  const systems: System[] = ["trust-the-agent", "source-reread", "postcept"];
+  const systems: System[] = ["trust-the-agent", "always-block", "source-reread", "postcept"];
   const scores: Record<System, number> = {
     "trust-the-agent": 0,
+    "always-block": 0,
+    "source-reread": 0,
+    postcept: 0,
+  };
+  // The two ways to be wrong, reported separately: a false safe tells a customer
+  // "done" when it is not, a false block holds a completion that was real.
+  const falseSafe: Record<System, number> = {
+    "trust-the-agent": 0,
+    "always-block": 0,
+    "source-reread": 0,
+    postcept: 0,
+  };
+  const falseBlock: Record<System, number> = {
+    "trust-the-agent": 0,
+    "always-block": 0,
     "source-reread": 0,
     postcept: 0,
   };
@@ -82,21 +105,26 @@ async function main(): Promise<void> {
   for (const spec of scenarios) {
     const got = await runScenario(spec);
     if (!got) {
-      console.error(
-        `Could not reach the playground at ${API_URL} (it may be waking from a cold start). ` +
-          "Try again in a few seconds."
-      );
+      console.error(`Could not reach the playground at ${API_URL}. Try again in a few seconds.`);
       process.exit(1);
     }
     for (const sys of systems) {
       // Correct = the system's safe/not-safe answer matches ground truth.
       if (got[sys] === spec.expect_safe) scores[sys] += 1;
+      else if (got[sys]) falseSafe[sys] += 1;
+      else falseBlock[sys] += 1;
     }
     rows.push({ id: spec.id, expect: spec.expect_safe, got });
   }
 
   if (process.argv.includes("--json")) {
-    console.log(JSON.stringify({ total: scenarios.length, scores, rows }, null, 2));
+    console.log(
+      JSON.stringify(
+        { total: scenarios.length, scores, false_safe: falseSafe, false_block: falseBlock, rows },
+        null,
+        2
+      )
+    );
     return;
   }
 
@@ -114,6 +142,12 @@ async function main(): Promise<void> {
   }
   console.log("-".repeat(22 + 8 + 18 * systems.length));
   console.log(pad("SCORE", 22) + pad("", 8) + systems.map((s) => pad(`${scores[s]}/${n}`, 18)).join(""));
+  console.log(
+    pad("false safe", 22) + pad("", 8) + systems.map((s) => pad(String(falseSafe[s]), 18)).join("")
+  );
+  console.log(
+    pad("false block", 22) + pad("", 8) + systems.map((s) => pad(String(falseBlock[s]), 18)).join("")
+  );
   console.log(
     "\nGround truth and scenario limitations: scenarios.json + README.md. " +
       "Postcept's column is the real engine via the public playground. Baselines " +

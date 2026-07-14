@@ -1,20 +1,110 @@
 {
-  "comment": "Each scenario names a playground scenario id and whether it is safe to tell a customer the action is done (expect_safe). A system is correct on a scenario when its safe or not-safe answer matches expect_safe. See README.md.",
+  "comment": "Each scenario names a playground scenario id and whether it is safe to tell a customer the action is done (expect_safe). A system is correct on a scenario when its safe or not-safe answer matches expect_safe. The set is balanced: calling everything safe fails the traps, and blocking everything fails the legitimate completions. See README.md.",
   "scenarios": [
-    { "id": "settled", "expect_safe": true, "note": "the one safe case" },
-    { "id": "pending", "expect_safe": false, "note": "still settling" },
-    { "id": "timeout_before_write", "expect_safe": false, "note": "never happened" },
-    { "id": "duplicate", "expect_safe": false, "note": "refunded twice" },
-    { "id": "wrong_amount", "expect_safe": false, "note": "amount mismatch" },
-    { "id": "wrong_currency", "expect_safe": false, "note": "currency mismatch" },
-    { "id": "wrong_customer", "expect_safe": false, "note": "wrong customer" },
-    { "id": "failed_after_success", "expect_safe": false, "note": "failed, terminal" },
-    { "id": "provider_outage", "expect_safe": false, "note": "unreachable" },
-    { "id": "schema_drift", "expect_safe": false, "note": "unknown state" },
-    { "id": "requires_action", "expect_safe": false, "note": "needs action" },
-    { "id": "canceled", "expect_safe": false, "note": "terminal non-success" },
-    { "id": "partial_refund", "expect_safe": false, "note": "partial amount" },
-    { "id": "currency_name_only", "expect_safe": false, "note": "required currency check skips, not safe" },
-    { "id": "uncorrelatable", "expect_safe": false, "note": "cannot locate" }
+    {
+      "id": "settled",
+      "expect_safe": true,
+      "note": "settled and matching"
+    },
+    {
+      "id": "pending",
+      "expect_safe": false,
+      "note": "still settling"
+    },
+    {
+      "id": "timeout_before_write",
+      "expect_safe": false,
+      "note": "never happened"
+    },
+    {
+      "id": "duplicate",
+      "expect_safe": false,
+      "note": "refunded twice"
+    },
+    {
+      "id": "wrong_amount",
+      "expect_safe": false,
+      "note": "amount mismatch"
+    },
+    {
+      "id": "wrong_currency",
+      "expect_safe": false,
+      "note": "currency mismatch"
+    },
+    {
+      "id": "wrong_customer",
+      "expect_safe": false,
+      "note": "wrong customer"
+    },
+    {
+      "id": "failed_after_success",
+      "expect_safe": false,
+      "note": "failed, terminal"
+    },
+    {
+      "id": "provider_outage",
+      "expect_safe": false,
+      "note": "unreachable"
+    },
+    {
+      "id": "schema_drift",
+      "expect_safe": false,
+      "note": "unknown state"
+    },
+    {
+      "id": "requires_action",
+      "expect_safe": false,
+      "note": "needs action"
+    },
+    {
+      "id": "canceled",
+      "expect_safe": false,
+      "note": "terminal non-success"
+    },
+    {
+      "id": "partial_refund",
+      "expect_safe": false,
+      "note": "partial amount"
+    },
+    {
+      "id": "currency_name_only",
+      "expect_safe": false,
+      "note": "required currency check skips, not safe"
+    },
+    {
+      "id": "uncorrelatable",
+      "expect_safe": false,
+      "note": "cannot locate"
+    },
+    {
+      "id": "partial_refund_intended",
+      "expect_safe": true,
+      "note": "intended partial, claim matches"
+    },
+    {
+      "id": "second_partial_distinct_ops",
+      "expect_safe": true,
+      "note": "two partials, two operations"
+    },
+    {
+      "id": "currency_uppercase",
+      "expect_safe": true,
+      "note": "USD vs usd, equal"
+    },
+    {
+      "id": "unrelated_refund_same_customer",
+      "expect_safe": true,
+      "note": "coexisting refund, not a duplicate"
+    },
+    {
+      "id": "retry_returned_original",
+      "expect_safe": true,
+      "note": "idempotent retry, one refund"
+    },
+    {
+      "id": "refund_id_only",
+      "expect_safe": true,
+      "note": "correlates without a charge id"
+    }
   ]
 }

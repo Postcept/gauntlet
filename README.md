@@ -21,12 +21,20 @@ success state as done. This is the simple status re-check teams write by hand. I
 has no notion of duplicates, wrong amount or customer, pending versus final, or
 unknown provider states, so it over-claims on exactly those.
 
+`always-block` never trusts anything. On a trap-heavy set this policy would
+score high while blocking every legitimate completion, which is exactly why the
+set is balanced and the error types are split.
+
 `postcept` is the `safe_to_claim_complete` decision from the engine.
 
 A system scores a point when its safe or not-safe answer matches the scenario's
-ground truth, which is set in `scenarios.json`. One of the fifteen scenarios is
-genuinely safe to call complete. The rest are traps that a naive check
-mishandles in a specific way.
+ground truth, which is set in `scenarios.json`. The set is balanced on purpose:
+seven of the twenty-one scenarios are genuinely safe to call complete and
+fourteen are traps, and the two ways to be wrong are reported separately. A
+false safe tells a customer "done" when it is not. A false block holds a
+completion that was real. `trust-the-agent` maximizes false safes,
+`always-block` maximizes false blocks, and both are printed in every run so
+neither degenerate policy can look good.
 
 ## Why the comparison is fair
 
