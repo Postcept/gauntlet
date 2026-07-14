@@ -14,7 +14,7 @@
     { "id": "requires_action", "expect_safe": false, "note": "needs action" },
     { "id": "canceled", "expect_safe": false, "note": "terminal non-success" },
     { "id": "partial_refund", "expect_safe": false, "note": "partial amount" },
-    { "id": "currency_name_only", "expect_safe": true, "note": "safe via skip-not-fail" },
+    { "id": "currency_name_only", "expect_safe": false, "note": "required currency check skips, not safe" },
     { "id": "uncorrelatable", "expect_safe": false, "note": "cannot locate" }
   ]
 }

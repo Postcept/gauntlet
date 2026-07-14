@@ -18,17 +18,17 @@ test("at least 15 reproducible scenarios, each with declared ground truth", () =
   }
 });
 
-test("exactly the two genuinely-safe scenarios are marked safe", () => {
+test("exactly the one genuinely-safe scenario is marked safe", () => {
   const safe = specs.filter((s) => s.expect_safe).map((s) => s.id).sort();
-  assert.deepEqual(safe, ["currency_name_only", "settled"]);
+  assert.deepEqual(safe, ["settled"]);
 });
 
 test("the scoring rule rewards matching ground truth, nothing else", () => {
   const score = (answers) =>
     specs.reduce((acc, s) => acc + (answers[s.id] === s.expect_safe ? 1 : 0), 0);
-  // A system that always says "safe" only scores the safe scenarios (2).
+  // A system that always says "safe" only scores the one safe scenario (1).
   const alwaysSafe = Object.fromEntries(specs.map((s) => [s.id, true]));
-  assert.equal(score(alwaysSafe), 2);
+  assert.equal(score(alwaysSafe), 1);
   // A system that perfectly matches truth scores all of them.
   const perfect = Object.fromEntries(specs.map((s) => [s.id, s.expect_safe]));
   assert.equal(score(perfect), specs.length);

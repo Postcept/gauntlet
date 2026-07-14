@@ -24,7 +24,7 @@ unknown provider states, so it over-claims on exactly those.
 `postcept` is the `safe_to_claim_complete` decision from the engine.
 
 A system scores a point when its safe or not-safe answer matches the scenario's
-ground truth, which is set in `scenarios.json`. Two of the fifteen scenarios are
+ground truth, which is set in `scenarios.json`. One of the fifteen scenarios is
 genuinely safe to call complete. The rest are traps that a naive check
 mishandles in a specific way.
 
