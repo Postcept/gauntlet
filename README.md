@@ -4,11 +4,17 @@
 npx @postcept/gauntlet
 ```
 
-Runs 15 reproducible broken-refund scenarios (timeouts, duplicates, pending
+Runs 21 reproducible broken-refund scenarios (timeouts, duplicates, pending
 settlements, wrong amount, currency, or customer, terminal failures, provider
 drift, uncorrelatable claims) through Postcept's verification engine over the
 public playground endpoint, and through two baselines, then scores each against a
 fixed, public ground truth.
+
+Current scores on the 21-scenario set (14 traps, 7 safe completions):
+a self-grading agent 7/21, a trace-reading LLM judge 14/21, always-block
+14/21, a hand-rolled status re-check 18/21, Postcept's outcome verification
+21/21 with zero false safes and zero false blocks. Run it yourself to
+reproduce the numbers.
 
 ## What's compared
 
